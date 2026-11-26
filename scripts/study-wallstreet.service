@@ -1,0 +1,11 @@
+[Unit]
+Description=Study Wallstreet sentence reader
+After=network.target
+[Service]
+WorkingDirectory=%h/apps/study_wallstreet
+ExecStart=/usr/bin/python3 %h/apps/study_wallstreet/server.py
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+[Install]
+WantedBy=default.target

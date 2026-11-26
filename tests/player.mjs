@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import { Player } from '../public/player.mjs';
+let spoken, canceled = 0;
+const synth = {getVoices: () => [{lang:'en-US'}], speak:u=>spoken=u, cancel:()=>canceled++, pause(){}, resume(){}};
+const p = new Player(synth, text=>({text}), ()=>{});
+p.load([{en:'First.'},{en:'Second.'}]);
+assert.equal(p.mode,'all'); p.toggle(); assert.equal(spoken.text,'First.');
+spoken.onend(); assert.equal(spoken.text,'Second.'); spoken.onend(); assert.equal(spoken.text,'First.');
+p.setMode('one'); assert.equal(p.mode,'one'); spoken.onend(); assert.equal(spoken.text,'First.');
+p.setMode('one'); assert.equal(p.mode,'none'); spoken.onend(); assert.equal(spoken.text,'Second.'); spoken.onend(); assert.equal(p.state,'stopped');
+p.toggle(); p.toggle(); assert.equal(p.state,'paused'); p.toggle(); assert.equal(p.state,'playing');
+p.setMode('all'); const stale = spoken; p.click(1); assert.equal(p.mode,'none'); assert.equal(spoken.text,'Second.'); stale.onend(); assert.equal(p.index,1);
+p.stop(); assert.equal(p.index,0); assert.equal(p.state,'stopped'); spoken.onend(); assert.equal(p.state,'stopped');
+p.setMode('all'); assert.equal(p.mode,'all'); p.setMode('all'); assert.equal(p.mode,'none');
+synth.getVoices = () => []; p.toggle(); assert.equal(p.state,'stopped'); assert.ok(canceled > 0);
+console.log('PASS: 전체 반복, 단일 반복, 반복 해제, 순차 재생, 일시정지, 문장 클릭, 정지, 오래된 이벤트, 음성 없음');
